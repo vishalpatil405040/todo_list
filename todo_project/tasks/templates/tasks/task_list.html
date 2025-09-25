@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo App</title>
+</head>
+<body>
+    <h1>My Tasks</h1>
+    <a href="{% url 'task-create' %}">➕ Add Task</a>
+    <ul>
+        {% for task in tasks %}
+            <li>
+                {{ task.title }} - 
+                {% if task.completed %} ✅ Done {% else %} ⏳ Pending {% endif %}
+                | <a href="{% url 'task-update' task.id %}">Edit</a>
+                | <a href="{% url 'task-delete' task.id %}">Delete</a>
+            </li>
+        {% empty %}
+            <li>No tasks yet!</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
