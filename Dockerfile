@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir gunicorn   # <--- Force install
 
 # Copy project files
 COPY . .
-COPY .env .
+
 # # Collect static files
 # RUN python manage.py collectstatic --noinput
 
