@@ -1,4 +1,4 @@
-name: Django CI/CD to ECR
+name: Django CI/CD to ECR & EC2
 
 on:
   push:
@@ -21,38 +21,30 @@ jobs:
         aws-region: us-east-1
 
     - name: Login to Amazon ECR
-      id: ecr-login
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Build Docker image
       run: |
-        IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/todo_list
-        GIT_SHA=${{ github.sha }}
-        
-        echo "Building image with tags: $IMAGE_URI:latest and $IMAGE_URI:$GIT_SHA"
-        
-        docker build -t $IMAGE_URI:latest -t $IMAGE_URI:$GIT_SHA .
+        aws ecr get-login-password --region us-east-1 \
+        | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
 
-    - name: Push Docker image to ECR
+    - name: Build, Tag, and Push Docker image
       run: |
-        IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/todo_list
-        GIT_SHA=${{ github.sha }}
-        
-        docker push $IMAGE_URI:latest
-        docker push $IMAGE_URI:$GIT_SHA
+        IMAGE_REPO_NAME=todo_list
+        IMAGE_TAG=latest
+        docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+        docker tag $IMAGE_REPO_NAME:$IMAGE_TAG 983915441388.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+        docker push 983915441388.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
 
     - name: Deploy to EC2
+      env:
+        PRIVATE_KEY: ${{ secrets.EC2_KEY }}
+        HOST: ${{ secrets.EC2_HOST }}
       run: |
-        # Save private key from GitHub Secret into a file
-        echo "${{ secrets.EC2_KEY }}" > key.pem
-        chmod 600 key.pem
-
-        IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/todo_list
-        GIT_SHA=${{ github.sha }}
-
-        ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ secrets.EC2_HOST }} << EOF
-          docker pull $IMAGE_URI:$GIT_SHA
+        echo "$PRIVATE_KEY" > private_key.pem
+        chmod 600 private_key.pem
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$HOST << 'EOF'
+          aws ecr get-login-password --region us-east-1 \
+          | docker login --username AWS --password-stdin 983915441388.dkr.ecr.us-east-1.amazonaws.com
+          docker pull 983915441388.dkr.ecr.us-east-1.amazonaws.com/todo_list:latest
           docker stop django-app || true
           docker rm django-app || true
-          docker run -d -p 8000:8000 --name django-app $IMAGE_URI:$GIT_SHA
+          docker run -d -p 8000:8000 --name django-app 983915441388.dkr.ecr.us-east-1.amazonaws.com/todo_list:latest
         EOF
