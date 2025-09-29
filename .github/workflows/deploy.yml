@@ -43,12 +43,13 @@ jobs:
 
     - name: Deploy to EC2
       run: |
+        # Save private key from GitHub Secret into a file
         echo "${{ secrets.EC2_KEY }}" > key.pem
         chmod 600 key.pem
-        
+
         IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/todo_list
         GIT_SHA=${{ github.sha }}
-        
+
         ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ secrets.EC2_HOST }} << EOF
           docker pull $IMAGE_URI:$GIT_SHA
           docker stop django-app || true
