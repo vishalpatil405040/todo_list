@@ -43,6 +43,6 @@ jobs:
         chmod 600 ~/.ssh/todo_list.pem
 
         # Use the correct username here: ubuntu or ec2-user
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/todo_list.pem ubuntu@$HOST << EOF
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/todo_list.pem ec2-user@$HOST << EOF
         echo "SSH works!"
         EOF
