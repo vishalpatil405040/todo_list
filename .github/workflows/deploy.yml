@@ -38,13 +38,10 @@ jobs:
         PRIVATE_KEY: ${{ secrets.EC2_KEY }}
         HOST: ${{ secrets.EC2_HOST }}
       run: |
-        echo "$PRIVATE_KEY" > private_key.pem
-        chmod 600 private_key.pem
-        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$HOST << 'EOF'
-          aws ecr get-login-password --region us-east-1 \
-          | docker login --username AWS --password-stdin 983915441388.dkr.ecr.us-east-1.amazonaws.com
-          docker pull 983915441388.dkr.ecr.us-east-1.amazonaws.com/todo_list:latest
-          docker stop django-app || true
-          docker rm django-app || true
-          docker run -d -p 8000:8000 --name django-app 983915441388.dkr.ecr.us-east-1.amazonaws.com/todo_list:latest
-        EOF
+        mkdir -p ~/.ssh
+        echo "$PRIVATE_KEY" > ~/.ssh/todo_list.pem
+        chmod 600 ~/.ssh/todo_list.pem
+
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/todo_list.pem ubuntu@$HOST << 'EOF'
+          echo "SSH works!"
+    EOF
