@@ -26,18 +26,29 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t my-django-app:latest .
-        docker tag my-django-app:latest ${{ steps.ecr-login.outputs.registry }}/my-django-app:latest
+        IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/my-django-app
+        GIT_SHA=${{ github.sha }}
+        
+        echo "Building image with tags: $IMAGE_URI:latest and $IMAGE_URI:$GIT_SHA"
+        
+        docker build -t $IMAGE_URI:latest -t $IMAGE_URI:$GIT_SHA .
 
     - name: Push Docker image to ECR
       run: |
-        docker push ${{ steps.ecr-login.outputs.registry }}/my-django-app:latest
+        IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/my-django-app
+        GIT_SHA=${{ github.sha }}
+        
+        docker push $IMAGE_URI:latest
+        docker push $IMAGE_URI:$GIT_SHA
 
-    - name: (Optional) Deploy to EC2
+    - name: Deploy to EC2
       run: |
-        ssh -i ${{ secrets.EC2_KEY }} ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          docker pull 983915441388.dkr.ecr.us-east-1.amazonaws.com/my-django-app:latest
+        IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/my-django-app
+        GIT_SHA=${{ github.sha }}
+        
+        ssh -i ${{ secrets.EC2_KEY }} ubuntu@${{ secrets.EC2_HOST }} << EOF
+          docker pull $IMAGE_URI:$GIT_SHA
           docker stop django-app || true
           docker rm django-app || true
-          docker run -d -p 8000:8000 --name django-app 983915441388.dkr.ecr.us-east-1.amazonaws.com/my-django-app:latest
+          docker run -d -p 8000:8000 --name django-app $IMAGE_URI:$GIT_SHA
         EOF
