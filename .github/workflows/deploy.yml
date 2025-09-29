@@ -27,7 +27,7 @@ jobs:
 
     - name: Build, Tag, and Push Docker image
       run: |
-        IMAGE_REPO_NAME=todo_list
+        IMAGE_REPO_NAME=todo_list 
         IMAGE_TAG=latest
         docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
         docker tag $IMAGE_REPO_NAME:$IMAGE_TAG 983915441388.dkr.ecr.us-east-1.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
