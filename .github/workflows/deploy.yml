@@ -53,3 +53,4 @@ jobs:
 
         # Run new container
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/todo_list.pem ec2-user@$HOST "docker run -d --name todo_container -p 8000:8000 983915441388.dkr.ecr.us-east-1.amazonaws.com/todo_list:latest"
+ 
