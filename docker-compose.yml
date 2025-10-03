@@ -2,7 +2,8 @@ version: "3.9"
 
 services:
   web:
-    image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/my-django-app:latest
+    image: 983915441388.dkr.ecr.us-east-1.amazonaws.com/todo_list:latest
+
     container_name: django-app
     restart: always   # auto restart if container crashes or EC2 restarts
     ports:
