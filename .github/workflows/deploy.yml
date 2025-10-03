@@ -42,10 +42,5 @@ jobs:
         echo "$PRIVATE_KEY" > ~/.ssh/todo_list.pem
         chmod 600 ~/.ssh/todo_list.pem
 
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/todo_list.pem ec2-user@$HOST <<EOF
-          echo "SSH works!"
-          cd /home/ec2-user/app
-          docker pull 983915441388.dkr.ecr.us-east-1.amazonaws.com/todo_list:latest
-          docker compose down || true
-          docker compose up -d
-EOF
+        # Use the correct username here: ubuntu or ec2-user
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/todo_list.pem ec2-user@$HOST 
