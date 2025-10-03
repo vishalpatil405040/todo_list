@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  web:
+    image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/my-django-app:latest
+    container_name: django-app
+    restart: always   # auto restart if container crashes or EC2 restarts
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=todo_project.settings
+      - DEBUG=False
+      - ALLOWED_HOSTS=127.0.0.1,localhost,your-ec2-public-ip
+    command: gunicorn todo_project.wsgi:application --bind 0.0.0.0:8000
